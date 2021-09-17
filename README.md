@@ -4,4 +4,4 @@
 
 ## Resources
 
-- [Active Record Associations]
+- [Active Record Associations](https://guides.rubyonrails.org/association_basics.html)
