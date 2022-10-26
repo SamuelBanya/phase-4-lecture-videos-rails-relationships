@@ -1,0 +1,114 @@
+* Notes
+<2022-10-26 Wed 17:48>: I noticed that there was not an 'adopter' model within any of the 'pet-shop' related apps created in the previous video lessons, so I created one with the following command:
+#+begin_src bash
+samuelbanya@Samuels-MBP ~/hub/Development/code/phase-4/phase-4-lecture-videos-rails-relationships/pet-shop $ rails g model adopter --no-test-framework
+The dependency tzinfo-data (>= 0) will be unused by any of the platforms Bundler is installing for. Bundler is installing for ruby but the dependency is only for x86-mingw32, x86-mswin32, x64-mingw32, java. To add those platforms to the bundle, run `bundle lock --add-platform x86-mingw32 x86-mswin32 x64-mingw32 java`.
+      invoke  active_record
+      create    db/migrate/20221026224956_create_adopters.rb
+      create    app/models/adopter.rb
+#+end_src
+
+I then ran the related 'rails db:migrate' command as well:
+#+begin_src bash
+samuelbanya@Samuels-MBP ~/hub/Development/code/phase-4/phase-4-lecture-videos-rails-relationships/pet-shop $ rails db:migrate
+The dependency tzinfo-data (>= 0) will be unused by any of the platforms Bundler is installing for. Bundler is installing for ruby but the dependency is only for x86-mingw32, x86-mswin32, x64-mingw32, java. To add those platforms to the bundle, run `bundle lock --add-platform x86-mingw32 x86-mswin32 x64-mingw32 java`.
+== 20221026224956 CreateAdopters: migrating ===================================
+-- create_table(:adopters)
+   -> 0.0022s
+== 20221026224956 CreateAdopters: migrated (0.0022s) ==========================
+#+end_src
+
+I then adjusted the 'app/models/adopter.rb' model file with the following:
+#+begin_src ruby
+class Adopter < ApplicationRecord
+  has_many :pets
+  has_many :shops, through: :pets
+end
+#+end_src
+
+I then adjusted the 'app/models/pet.rb' model file with the following:
+#+begin_src ruby
+class Pet < ApplicationRecord
+  belongs_to :adopter
+  belongs_to :shop
+end
+#+end_src
+
+I then created foreign keys to link the tables via this 'rails c migration' command:
+#+begin_src bash
+samuelbanya@Samuels-MBP ~/hub/Development/code/phase-4/phase-4-lecture-videos-rails-relationships/pet-shop $ rails g migration add_foreign_keys pets
+The dependency tzinfo-data (>= 0) will be unused by any of the platforms Bundler is installing for. Bundler is installing for ruby but the dependency is only for x86-mingw32, x86-mswin32, x64-mingw32, java. To add those platforms to the bundle, run `bundle lock --add-platform x86-mingw32 x86-mswin32 x64-mingw32 java`.
+      invoke  active_record
+      create    db/migrate/20221026225532_add_foreign_keys.rb
+#+end_src
+
+I then added the following within the '20221026225532_add_foreign_keys.rb' migration file:
+#+begin_src ruby
+class AddForeignKeys < ActiveRecord::Migration[7.0]
+  def change
+    add_column :pets, :adopter_id, :integer
+    add_column :pets, :shop_id, :integer
+  end
+end
+#+end_src
+
+I then ran the related 'rails db:migrate' command as well:
+#+begin_src bash
+samuelbanya@Samuels-MBP ~/hub/Development/code/phase-4/phase-4-lecture-videos-rails-relationships/pet-shop $ rails db:migrate
+The dependency tzinfo-data (>= 0) will be unused by any of the platforms Bundler is installing for. Bundler is installing for ruby but the dependency is only for x86-mingw32, x86-mswin32, x64-mingw32, java. To add those platforms to the bundle, run `bundle lock --add-platform x86-mingw32 x86-mswin32 x64-mingw32 java`.
+== 20221026225532 AddForeignKeys: migrating ===================================
+-- add_column(:pets, :adopter_id, :integer)
+   -> 0.0019s
+-- add_column(:pets, :shop_id, :integer)
+   -> 0.0010s
+== 20221026225532 AddForeignKeys: migrated (0.0030s) ==========================
+#+end_src
+
+I then checked out the 'rails c' console to check out the methods associated with the 'has_many' and 'belongs_to' Active Record associations mentioned so far:
+#+begin_src bash
+samuelbanya@Samuels-MBP ~/hub/Development/code/phase-4/phase-4-lecture-videos-rails-relationships/pet-shop $ rails c
+The dependency tzinfo-data (>= 0) will be unused by any of the platforms Bundler is installing for. Bundler is installing for ruby but the dependency is only for x86-mingw32, x86-mswin32, x64-mingw32, java. To add those platforms to the bundle, run `bundle lock --add-platform x86-mingw32 x86-mswin32 x64-mingw32 java`.
+Loading development environment (Rails 7.0.4)
+2.7.0 :001 > Pet.first
+  Pet Load (0.1ms)  SELECT "pets".* FROM "pets" ORDER BY "pets"."id" ASC LIMIT ?  [["LIMIT", 1]]
+ =>
+#<Pet:0x00007ff42f5fd1d0
+ id: 1,
+ name: "Timmy",
+ breed: "Siamese",
+ created_at: Thu, 20 Oct 2022 00:29:28.239168000 UTC +00:00,
+ updated_at: Thu, 20 Oct 2022 00:29:28.239168000 UTC +00:00,
+ adopter_id: nil,
+ shop_id: nil>
+2.7.0 :002 > pet = Pet.first()
+  Pet Load (0.2ms)  SELECT "pets".* FROM "pets" ORDER BY "pets"."id" ASC LIMIT ?  [["LIMIT", 1]]
+ =>
+#<Pet:0x00007ff430b50730
+...
+2.7.0 :003 > pet.adopter
+ => nil
+2.7.0 :004 > pet.adopter.name
+Traceback (most recent call last):
+(irb):4:in `<main>': undefined method `name' for nil:NilClass (NoMethodError)
+2.7.0 :005 > shop = Shop.first()
+  Shop Load (0.2ms)  SELECT "shops".* FROM "shops" ORDER BY "shops"."id" ASC LIMIT ?  [["LIMIT", 1]]
+ => nil
+2.7.0 :006 > shop.adopters()
+Traceback (most recent call last):
+(irb):6:in `<main>': undefined method `adopters' for nil:NilClass (NoMethodError)
+2.7.0 :007 > adopter = Adopter.first()
+  Adopter Load (0.2ms)  SELECT "adopters".* FROM "adopters" ORDER BY "adopters"."id" ASC LIMIT ?  [["LIMIT", 1]]
+ => nil
+2.7.0 :008 > adopter.shops()
+Traceback (most recent call last):
+(irb):8:in `<main>': undefined method `shops' for nil:NilClass (NoMethodError)
+2.7.0 :009 > shop.adopters << Adopter.create(name: "Sam")
+Traceback (most recent call last):
+(irb):9:in `<main>': undefined method `adopters' for nil:NilClass (NoMethodError)
+2.7.0 :010 > shop.adopters()
+Traceback (most recent call last):
+(irb):10:in `<main>': undefined method `adopters' for nil:NilClass (NoMethodError)
+#+end_src
+
+NOTE:
+- Many of the methods above didn't work because I wasn't provided the seed data that the video had, so it's more or less the fault of the video instructor for that issue, not mine.
